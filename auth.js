@@ -79,4 +79,41 @@ class Auth {
 }
 
 // Initialize global auth instance
+
 const auth = new Auth();
+// Authentication Class - REVISED VERSION
+class Auth {
+    constructor() {
+        this.currentUser = null;
+        this.init();
+    }
+
+    init() {
+        // Check if user is already logged in
+        try {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                this.currentUser = JSON.parse(user);
+                this.redirectBasedOnRole();
+            }
+        } catch (error) {
+            console.error('Auth init error:', error);
+            localStorage.removeItem('currentUser');
+        }
+    }
+
+    login(username, password) {
+        const user = db.login(username, password);
+        if (user) {
+            this.currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            return { success: true, user };
+        }
+        return { 
+            success: false, 
+            message: 'Username atau password salah. Coba: sutris / sutris123 (admin) atau nita / nita123 (karyawan)' 
+        };
+    }
+
+    // ... (sisanya tetap sama) ...
+}
