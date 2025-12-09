@@ -577,20 +577,38 @@ class Database {
 // Initialize global database instance
 
 const db = new Database();
-// Database Class - REVISED VERSION
+// Database Class - COMPLETE FIXED VERSION
 class Database {
     constructor() {
+        console.log('Initializing database...');
         this.initDatabase();
+        console.log('Database initialized:', {
+            employees: this.getEmployees().length,
+            attendances: this.getAttendances().length,
+            holidays: this.getHolidays().length
+        });
     }
 
     initDatabase() {
-        // Initialize employees dengan data yang benar
-        if (!localStorage.getItem('employees')) {
+        // Clear existing data for fresh start
+        // localStorage.clear();
+        
+        // Initialize employees dengan data YANG BENAR
+        if (!localStorage.getItem('employees') || JSON.parse(localStorage.getItem('employees')).length === 0) {
+            console.log('Creating initial employee data...');
             const employees = [
-                // ADMIN
-                { id: 1, username: 'sutris', password: 'sutris123', name: 'Sutrisno', role: 'admin', position: 'HRD Manager', created_at: new Date().toISOString() },
+                // ADMIN - hanya 1
+                { 
+                    id: 1, 
+                    username: 'sutris', 
+                    password: 'sutris123', 
+                    name: 'Sutrisno', 
+                    role: 'admin', 
+                    position: 'HRD Manager', 
+                    created_at: new Date().toISOString() 
+                },
                 
-                // KARYAWAN
+                // KARYAWAN - 18 orang
                 { id: 2, username: 'nita', password: 'nita123', name: 'Nita Sri Wahyuningrum, S.Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
                 { id: 3, username: 'heri', password: 'heri123', name: 'Heri Kurniawan', role: 'employee', position: 'Staff', created_at: new Date().toISOString() },
                 { id: 4, username: 'yian', password: 'yian123', name: 'Yian Hidayatul Ulfa, S. Pd.', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
@@ -610,9 +628,10 @@ class Database {
                 { id: 18, username: 'zainap', password: 'zainap123', name: 'Zainap Assaihatus Syahidah S. Si', role: 'employee', position: 'Guru', created_at: new Date().toISOString() }
             ];
             localStorage.setItem('employees', JSON.stringify(employees));
+            console.log('Created', employees.length, 'employees');
         }
 
-        // Initialize attendances (kondisi awal kosong)
+        // Initialize attendances (kosong dulu)
         if (!localStorage.getItem('attendances')) {
             localStorage.setItem('attendances', JSON.stringify([]));
         }
@@ -643,19 +662,477 @@ class Database {
         }
     }
 
-    // Auth methods
+    // ============ AUTH METHODS ============
     login(username, password) {
         try {
             const employees = JSON.parse(localStorage.getItem('employees') || '[]');
+            console.log('Login attempt - Total users:', employees.length);
+            
+            // Find user - case sensitive exact match
             const user = employees.find(emp => 
                 emp.username === username && emp.password === password
             );
-            return user || null;
+            
+            if (user) {
+                console.log('Login successful for:', user.username, 'Role:', user.role);
+                return user;
+            } else {
+                console.log('Login failed - No match for:', username);
+                // Debug: list all users
+                console.log('Available users:', employees.map(e => ({ 
+                    username: e.username, 
+                    password: e.password, 
+                    role: e.role 
+                })));
+            }
+            
+            return null;
         } catch (error) {
             console.error('Login error:', error);
             return null;
         }
     }
 
-    // ... (sisanya sama seperti sebelumnya, tidak perlu diubah) ...
-}
+    // ============ EMPLOYEE METHODS ============
+    getEmployees(role = null) {
+        try {
+            const employees = JSON.parse(localStorage.getItem('employees') || '[]');
+            if (role) {
+                return employees.filter(emp => emp.role === role);
+            }
+            return employees;
+        } catch (error) {
+            console.error('Error getting employees:', error);
+            return [];
+        }
+    }
+
+    getEmployeeById(id) {
+        const employees = this.getEmployees();
+        return employees.find(emp => emp.id == id);
+    }
+
+    getEmployeeByUsername(username) {
+        const employees = this.getEmployees();
+        return employees.find(emp => emp.username === username);
+    }
+
+    addEmployee(data) {
+        const employees = this.getEmployees();
+        const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id)) + 1 : 1;
+        
+        const employee = {
+            id: newId,
+            username: data.username,
+            password: data.password || data.username + '123',
+            name: data.name,
+            role: 'employee',
+            position: data.position || 'Staff',
+            created_at: new Date().toISOString()
+        };
+        
+        employees.push(employee);
+        localStorage.setItem('employees', JSON.stringify(employees));
+        return employee;
+    }
+
+    updateEmployee(id, data) {
+        const employees = this.getEmployees();
+        const index = employees.findIndex(emp => emp.id == id);
+        
+        if (index !== -1) {
+            employees[index] = { ...employees[index], ...data };
+            localStorage.setItem('employees', JSON.stringify(employees));
+            return employees[index];
+        }
+        return null;
+    }
+
+    resetPassword(id) {
+        const employee = this.getEmployeeById(id);
+        if (employee) {
+            employee.password = employee.username + '123';
+            this.updateEmployee(id, employee);
+            return true;
+        }
+        return false;
+    }
+
+    // ============ ATTENDANCE METHODS ============
+    getAttendances(filters = {}) {
+        try {
+            let attendances = JSON.parse(localStorage.getItem('attendances') || '[]');
+            
+            if (filters.employeeId) {
+                attendances = attendances.filter(a => a.employee_id == filters.employeeId);
+            }
+            
+            if (filters.startDate && filters.endDate) {
+                attendances = attendances.filter(a => {
+                    const date = new Date(a.date);
+                    const start = new Date(filters.startDate);
+                    const end = new Date(filters.endDate);
+                    end.setHours(23, 59, 59);
+                    return date >= start && date <= end;
+                });
+            }
+            
+            if (filters.status) {
+                attendances = attendances.filter(a => a.status === filters.status);
+            }
+            
+            if (filters.date) {
+                attendances = attendances.filter(a => a.date === filters.date);
+            }
+            
+            return attendances.sort((a, b) => new Date(b.date) - new Date(a.date));
+        } catch (error) {
+            console.error('Error getting attendances:', error);
+            return [];
+        }
+    }
+
+    getTodayAttendance(employeeId) {
+        const today = new Date().toISOString().split('T')[0];
+        const attendances = this.getAttendances();
+        return attendances.find(a => 
+            a.employee_id == employeeId && a.date === today
+        );
+    }
+
+    checkIn(employeeId, status = 'Hadir', note = '', timeIn = null) {
+        const today = new Date().toISOString().split('T')[0];
+        const now = timeIn || new Date();
+        const timeInStr = now.toTimeString().split(' ')[0].substring(0, 5);
+        
+        // Check if Sunday
+        if (now.getDay() === 0) {
+            throw new Error('Hari Minggu libur, tidak bisa absen');
+        }
+        
+        // Check if holiday
+        const holidays = this.getHolidays();
+        const isHoliday = holidays.some(h => h.date === today);
+        if (isHoliday) {
+            throw new Error('Hari libur nasional, tidak bisa absen');
+        }
+        
+        // Check if already checked in
+        const existing = this.getTodayAttendance(employeeId);
+        if (existing) {
+            throw new Error('Anda sudah melakukan absen masuk hari ini');
+        }
+        
+        // Calculate late minutes
+        const standardTime = new Date(now);
+        standardTime.setHours(7, 30, 0, 0);
+        const lateMinutes = now > standardTime ? 
+            Math.round((now - standardTime) / (1000 * 60)) : 0;
+        
+        const attendance = {
+            id: Date.now(),
+            employee_id: employeeId,
+            date: today,
+            time_in: timeInStr,
+            time_out: null,
+            status: status,
+            note: note,
+            late_minutes: lateMinutes,
+            created_at: new Date().toISOString()
+        };
+        
+        const attendances = this.getAttendances();
+        attendances.push(attendance);
+        localStorage.setItem('attendances', JSON.stringify(attendances));
+        
+        console.log('Check-in successful:', attendance);
+        return attendance;
+    }
+
+    checkOut(employeeId, timeOut = null) {
+        const attendance = this.getTodayAttendance(employeeId);
+        if (!attendance) {
+            throw new Error('Anda belum melakukan absen masuk hari ini');
+        }
+        
+        if (attendance.time_out) {
+            throw new Error('Anda sudah melakukan absen keluar hari ini');
+        }
+        
+        const now = timeOut || new Date();
+        attendance.time_out = now.toTimeString().split(' ')[0].substring(0, 5);
+        
+        const attendances = this.getAttendances();
+        const index = attendances.findIndex(a => a.id === attendance.id);
+        if (index !== -1) {
+            attendances[index] = attendance;
+            localStorage.setItem('attendances', JSON.stringify(attendances));
+        }
+        
+        return attendance;
+    }
+
+    updateAttendance(attendanceId, data, adminId, reason) {
+        const attendances = this.getAttendances();
+        const index = attendances.findIndex(a => a.id == attendanceId);
+        
+        if (index !== -1) {
+            const oldData = { ...attendances[index] };
+            
+            // Recalculate late minutes if time_in changed
+            if (data.time_in) {
+                const date = new Date(attendances[index].date);
+                const timeParts = data.time_in.split(':');
+                const timeIn = new Date(date.setHours(timeParts[0], timeParts[1], 0));
+                
+                const standardTime = new Date(date);
+                standardTime.setHours(7, 30, 0, 0);
+                
+                data.late_minutes = timeIn > standardTime ? 
+                    Math.round((timeIn - standardTime) / (1000 * 60)) : 0;
+            }
+            
+            attendances[index] = { ...attendances[index], ...data };
+            
+            // Log the change
+            this.logChange({
+                id: Date.now(),
+                attendance_id: attendanceId,
+                admin_id: adminId,
+                old_data: oldData,
+                new_data: attendances[index],
+                reason: reason,
+                changed_at: new Date().toISOString()
+            });
+            
+            localStorage.setItem('attendances', JSON.stringify(attendances));
+            return attendances[index];
+        }
+        return null;
+    }
+
+    markAbsent(employeeId, date, note = '') {
+        const attendance = {
+            id: Date.now(),
+            employee_id: employeeId,
+            date: date,
+            time_in: null,
+            time_out: null,
+            status: 'Alfa',
+            note: note,
+            late_minutes: 0,
+            created_at: new Date().toISOString()
+        };
+        
+        const attendances = this.getAttendances();
+        attendances.push(attendance);
+        localStorage.setItem('attendances', JSON.stringify(attendances));
+        
+        return attendance;
+    }
+
+    // ============ HOLIDAY METHODS ============
+    getHolidays() {
+        try {
+            return JSON.parse(localStorage.getItem('holidays') || '[]');
+        } catch (error) {
+            console.error('Error getting holidays:', error);
+            return [];
+        }
+    }
+
+    addHoliday(holiday) {
+        const holidays = this.getHolidays();
+        const newId = holidays.length > 0 ? Math.max(...holidays.map(h => h.id)) + 1 : 1;
+        
+        holiday.id = newId;
+        holidays.push(holiday);
+        localStorage.setItem('holidays', JSON.stringify(holidays));
+        return holiday;
+    }
+
+    deleteHoliday(id) {
+        const holidays = this.getHolidays();
+        const filtered = holidays.filter(h => h.id != id);
+        localStorage.setItem('holidays', JSON.stringify(filtered));
+        return true;
+    }
+
+    // ============ CHANGE LOGS ============
+    logChange(log) {
+        const logs = JSON.parse(localStorage.getItem('change_logs') || '[]');
+        logs.push(log);
+        localStorage.setItem('change_logs', JSON.stringify(logs));
+    }
+
+    getChangeLogs() {
+        try {
+            const logs = JSON.parse(localStorage.getItem('change_logs') || '[]');
+            return logs.sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at));
+        } catch (error) {
+            console.error('Error getting change logs:', error);
+            return [];
+        }
+    }
+
+    // ============ STATISTICS METHODS ============
+    getEmployeeStats(employeeId, month = null, year = null) {
+        const now = new Date();
+        const targetMonth = month || now.getMonth() + 1;
+        const targetYear = year || now.getFullYear();
+        
+        const startDate = new Date(targetYear, targetMonth - 1, 1);
+        const endDate = new Date(targetYear, targetMonth, 0);
+        
+        const attendances = this.getAttendances({
+            employeeId: employeeId,
+            startDate: startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0]
+        });
+        
+        const present = attendances.filter(a => a.status === 'Hadir').length;
+        const late = attendances.filter(a => a.late_minutes > 0).length;
+        const permission = attendances.filter(a => a.status === 'Izin').length;
+        const sick = attendances.filter(a => a.status === 'Sakit').length;
+        const leave = attendances.filter(a => a.status === 'Cuti').length;
+        const absent = attendances.filter(a => a.status === 'Alfa').length;
+        
+        const totalWorkingDays = this.getWorkingDays(targetMonth, targetYear);
+        const attendanceRate = totalWorkingDays > 0 ? 
+            Math.round((present / totalWorkingDays) * 100) : 0;
+        
+        return {
+            present,
+            late,
+            permission,
+            sick,
+            leave,
+            absent,
+            total_working_days: totalWorkingDays,
+            attendance_rate: attendanceRate
+        };
+    }
+
+    getWorkingDays(month, year) {
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        const holidays = this.getHolidays();
+        
+        let workingDays = 0;
+        let currentDate = new Date(startDate);
+        
+        while (currentDate <= endDate) {
+            const dayOfWeek = currentDate.getDay();
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const isHoliday = holidays.some(h => h.date === dateStr);
+            
+            if (dayOfWeek !== 0 && !isHoliday) {
+                workingDays++;
+            }
+            
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        return workingDays;
+    }
+
+    getTodaySummary() {
+        const today = new Date().toISOString().split('T')[0];
+        const employees = this.getEmployees('employee');
+        const attendances = this.getAttendances({ date: today });
+        
+        const checkedIn = attendances.filter(a => a.time_in).length;
+        const onLeave = attendances.filter(a => 
+            ['Izin', 'Sakit', 'Cuti'].includes(a.status)
+        ).length;
+        
+        return {
+            total_employees: employees.length,
+            checked_in: checkedIn,
+            on_leave: onLeave,
+            absent: employees.length - attendances.length,
+            late: attendances.filter(a => a.late_minutes > 0).length
+        };
+    }
+
+    getTopEmployees(limit = 5) {
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const year = now.getFullYear();
+        
+        const employees = this.getEmployees('employee');
+        const stats = employees.map(employee => {
+            const employeeStats = this.getEmployeeStats(employee.id, month, year);
+            return {
+                ...employee,
+                ...employeeStats,
+                score: this.calculateEmployeeScore(employeeStats)
+            };
+        });
+        
+        return stats
+            .sort((a, b) => b.score - a.score)
+            .slice(0, limit);
+    }
+
+    calculateEmployeeScore(stats) {
+        // Higher score is better
+        let score = 100;
+        
+        // Penalty for absent
+        score -= stats.absent * 20;
+        
+        // Penalty for late
+        score -= Math.min(stats.late * 5, 30);
+        
+        // Small penalty for leave
+        score -= (stats.permission + stats.sick + stats.leave) * 2;
+        
+        // Bonus for perfect attendance
+        if (stats.absent === 0 && stats.late === 0) {
+            score += 20;
+        }
+        
+        return Math.max(0, score);
+    }
+
+    getAttendanceTrend(month, year) {
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        
+        const attendances = this.getAttendances({
+            startDate: startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0]
+        });
+        
+        const dates = [];
+        const presentData = [];
+        const lateData = [];
+        const absentData = [];
+        
+        let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            if (currentDate.getDay() !== 0) { // Skip Sundays
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const dayAttendances = attendances.filter(a => a.date === dateStr);
+                
+                dates.push(dateStr.substring(8, 10));
+                presentData.push(dayAttendances.filter(a => a.status === 'Hadir').length);
+                lateData.push(dayAttendances.filter(a => a.late_minutes > 0).length);
+                absentData.push(dayAttendances.filter(a => a.status === 'Alfa').length);
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        return { dates, presentData, lateData, absentData };
+    }
+
+    // ============ REPORT METHODS ============
+    generateReport(filters = {}) {
+        let attendances = this.getAttendances(filters);
+        
+        // Enrich with employee data
+        const report = attendances.map(attendance => {
+            const employee = this.getEmployeeById(attendance.employee_id);
+            return {
+               
