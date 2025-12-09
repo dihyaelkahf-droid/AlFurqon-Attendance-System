@@ -335,3 +335,362 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistem Absensi Karyawan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            color: white;
+            text-align: center;
+        }
+        
+        .login-logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .login-body {
+            padding: 40px 30px;
+        }
+        
+        .role-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .role-btn:hover {
+            border-color: #667eea;
+        }
+        
+        .role-btn.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        .role-btn i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .test-accounts {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            color: white;
+        }
+        
+        .quick-login {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-btn {
+            flex: 1;
+            min-width: 80px;
+        }
+        
+        .copyright {
+            color: rgba(255,255,255,0.7);
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .alert {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-fingerprint"></i>
+                </div>
+                <h2>Sistem Absensi</h2>
+                <p class="mb-0">Digital - Presensi Online</p>
+            </div>
+            
+            <div class="login-body">
+                <!-- Pilihan Role -->
+                <div class="role-buttons">
+                    <div class="role-btn active" id="roleEmployee" onclick="selectRole('employee')">
+                        <i class="fas fa-user"></i>
+                        <div>Karyawan</div>
+                    </div>
+                    <div class="role-btn" id="roleAdmin" onclick="selectRole('admin')">
+                        <i class="fas fa-user-shield"></i>
+                        <div>Administrator</div>
+                    </div>
+                </div>
+                
+                <!-- Form Login -->
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" 
+                                   placeholder="Masukkan username" required autofocus>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password" 
+                                   placeholder="Masukkan password" required>
+                        </div>
+                        <div class="form-text">Password sesuai data yang diberikan</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-login" id="loginButton">
+                        <i class="fas fa-sign-in-alt me-2"></i>MASUK SISTEM
+                    </button>
+                </form>
+                
+                <!-- Error Message -->
+                <div id="errorMessage" class="alert alert-danger mt-3" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- Testing Area -->
+        <div class="test-accounts">
+            <h5 class="text-center mb-3"><i class="fas fa-users"></i> Akun Testing</h5>
+            
+            <div class="row">
+                <div class="col-6">
+                    <div class="mb-3">
+                        <h6><i class="fas fa-user-shield text-warning"></i> Admin</h6>
+                        <div class="text-white">
+                            <div><strong>sutris</strong></div>
+                            <small>Password: sutris123</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="mb-3">
+                        <h6><i class="fas fa-user text-info"></i> Karyawan</h6>
+                        <div class="text-white">
+                            <div><strong>nita</strong></div>
+                            <small>Password: nita123</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quick-login">
+                <button class="btn btn-warning quick-btn" onclick="quickLogin('sutris', 'sutris123', 'admin')">
+                    <i class="fas fa-user-shield"></i> Admin
+                </button>
+                <button class="btn btn-info quick-btn" onclick="quickLogin('nita', 'nita123', 'employee')">
+                    <i class="fas fa-user"></i> Nita
+                </button>
+                <button class="btn btn-info quick-btn" onclick="quickLogin('heri', 'heri123', 'employee')">
+                    <i class="fas fa-user"></i> Heri
+                </button>
+                <button class="btn btn-info quick-btn" onclick="quickLogin('teguh', 'teguh123', 'employee')">
+                    <i class="fas fa-user"></i> Teguh
+                </button>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="reset.html" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-redo"></i> Reset Database
+                </a>
+            </div>
+            
+            <p class="copyright text-center mt-3">
+                Sistem Absensi v1.0 &copy; 2024
+                <br>
+                <small>Jam Kerja: 07:30 - 15:30 | Hari Libur: Minggu</small>
+            </p>
+        </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Global variables
+        let selectedRole = 'employee';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Login page loaded');
+            showDebugInfo();
+        });
+        
+        // Show debug info
+        function showDebugInfo() {
+            console.log('Debug Info:');
+            console.log('- Database loaded:', typeof db !== 'undefined');
+            console.log('- Auth loaded:', typeof auth !== 'undefined');
+            console.log('- Selected role:', selectedRole);
+        }
+        
+        // Select role function
+        function selectRole(role) {
+            selectedRole = role;
+            
+            // Update UI
+            document.getElementById('roleEmployee').classList.remove('active');
+            document.getElementById('roleAdmin').classList.remove('active');
+            document.getElementById(`role${role.charAt(0).toUpperCase() + role.slice(1)}`).classList.add('active');
+            
+            // Auto-fill username based on role
+            const usernameInput = document.getElementById('username');
+            if (role === 'admin') {
+                usernameInput.placeholder = 'Masukkan username admin';
+                usernameInput.value = 'sutris';
+            } else {
+                usernameInput.placeholder = 'Masukkan username karyawan';
+                usernameInput.value = 'nita';
+            }
+            
+            console.log('Role selected:', role);
+        }
+        
+        // Quick login function
+        window.quickLogin = function(username, password, role) {
+            selectRole(role);
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+            document.getElementById('loginButton').click();
+        };
+        
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginButton');
+            
+            // Reset error
+            errorDiv.style.display = 'none';
+            
+            // Validate
+            if (!username || !password) {
+                showError('Harap isi username dan password');
+                return;
+            }
+            
+            // Show loading
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            loginBtn.disabled = true;
+            
+            // Wait a bit for visual feedback
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Attempt login
+            console.log('Attempting login:', { username, password, role: selectedRole });
+            
+            const result = auth.login(username, password, selectedRole);
+            
+            if (result.success) {
+                console.log('Login successful, redirecting...');
+                
+                // Show success message
+                loginBtn.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
+                loginBtn.className = 'btn btn-success btn-login';
+                
+                // Redirect after delay
+                setTimeout(() => {
+                    if (result.user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'employee.html';
+                    }
+                }, 1000);
+                
+            } else {
+                // Show error
+                showError(result.message);
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }
+        });
+        
+        // Show error function
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> ${message}`;
+            errorDiv.style.display = 'block';
+        }
+        
+        // Auto select role based on username input
+        document.getElementById('username').addEventListener('input', function(e) {
+            const username = e.target.value.toLowerCase();
+            if (username === 'sutris') {
+                selectRole('admin');
+            } else if (username) {
+                selectRole('employee');
+            }
+        });
+    </script>
+</body>
+</html>
