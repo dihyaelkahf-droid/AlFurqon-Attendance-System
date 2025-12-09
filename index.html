@@ -121,4 +121,64 @@
         });
     </script>
 </body>
+
 </html>
+<script>
+    // Initialize database
+    const db = new Database();
+    
+    // Debug: Tampilkan data yang ada
+    console.log('Employees in database:', db.getEmployees());
+    
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        
+        console.log('Attempting login with:', { username, password });
+        
+        const result = auth.login(username, password);
+        
+        if (result.success) {
+            Utils.showToast('Login berhasil!', 'success');
+            
+            setTimeout(() => {
+                if (result.user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'employee.html';
+                }
+            }, 1000);
+        } else {
+            Utils.showToast(result.message, 'error');
+            console.log('Login failed for:', username);
+        }
+    });
+    
+    // Auto fill untuk testing
+    window.addEventListener('DOMContentLoaded', function() {
+        // Untuk memudahkan testing, tambahkan tombol auto fill
+        const testAccounts = document.createElement('div');
+        testAccounts.className = 'test-buttons';
+        testAccounts.innerHTML = `
+            <div class="mt-3">
+                <small class="text-white d-block mb-2">Test Login:</small>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="fillLogin('sutris', 'sutris123')">Admin</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="fillLogin('nita', 'nita123')">Nita</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="fillLogin('heri', 'heri123')">Heri</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="fillLogin('teguh', 'teguh123')">Teguh</button>
+                </div>
+            </div>
+        `;
+        
+        document.querySelector('.login-footer').appendChild(testAccounts);
+    });
+    
+    function fillLogin(username, password) {
+        document.getElementById('username').value = username;
+        document.getElementById('password').value = password;
+        Utils.showToast(`Isi login: ${username}`, 'info');
+    }
+</script>
