@@ -575,4 +575,87 @@ class Database {
 }
 
 // Initialize global database instance
+
 const db = new Database();
+// Database Class - REVISED VERSION
+class Database {
+    constructor() {
+        this.initDatabase();
+    }
+
+    initDatabase() {
+        // Initialize employees dengan data yang benar
+        if (!localStorage.getItem('employees')) {
+            const employees = [
+                // ADMIN
+                { id: 1, username: 'sutris', password: 'sutris123', name: 'Sutrisno', role: 'admin', position: 'HRD Manager', created_at: new Date().toISOString() },
+                
+                // KARYAWAN
+                { id: 2, username: 'nita', password: 'nita123', name: 'Nita Sri Wahyuningrum, S.Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 3, username: 'heri', password: 'heri123', name: 'Heri Kurniawan', role: 'employee', position: 'Staff', created_at: new Date().toISOString() },
+                { id: 4, username: 'yian', password: 'yian123', name: 'Yian Hidayatul Ulfa, S. Pd.', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 5, username: 'diah', password: 'diah123', name: 'Diah Aprilia Devi, S.Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 6, username: 'teguh', password: 'teguh123', name: 'Teguh Setia Isma Ramadan', role: 'employee', position: 'Staff', created_at: new Date().toISOString() },
+                { id: 7, username: 'iskandar', password: 'iskandar123', name: 'Iskandar Kholif, S.Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 8, username: 'dinul', password: 'dinul123', name: 'Dinul Qoyyimah, S. Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 9, username: 'endah', password: 'endah123', name: 'Endah Windarti, S.Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 10, username: 'citra', password: 'citra123', name: 'Citra Wulan Sari, S. Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 11, username: 'fajri', password: 'fajri123', name: 'Fajriansyah Abdillah', role: 'employee', position: 'Staff', created_at: new Date().toISOString() },
+                { id: 12, username: 'hamid', password: 'hamid123', name: 'Muh. Abdul Hamid, S.H.I', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 13, username: 'nurjayati', password: 'jayati123', name: 'Nurjayati, S.Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 14, username: 'riswan', password: 'riswan123', name: 'Riswan Siregar, M.Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 15, username: 'rizka', password: 'rizka123', name: 'Rizka Ulfiana, S. Tp', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 16, username: 'susi', password: 'susi123', name: 'Susi Dwi Ratna Sari, S.Pd', role: 'employee', position: 'Guru', created_at: new Date().toISOString() },
+                { id: 17, username: 'usamah', password: 'usamah123', name: 'Usamah Hanif', role: 'employee', position: 'Staff', created_at: new Date().toISOString() },
+                { id: 18, username: 'zainap', password: 'zainap123', name: 'Zainap Assaihatus Syahidah S. Si', role: 'employee', position: 'Guru', created_at: new Date().toISOString() }
+            ];
+            localStorage.setItem('employees', JSON.stringify(employees));
+        }
+
+        // Initialize attendances (kondisi awal kosong)
+        if (!localStorage.getItem('attendances')) {
+            localStorage.setItem('attendances', JSON.stringify([]));
+        }
+
+        // Initialize holidays
+        if (!localStorage.getItem('holidays')) {
+            const holidays = [
+                { id: 1, date: '2024-01-01', description: 'Tahun Baru Masehi' },
+                { id: 2, date: '2024-03-11', description: 'Hari Raya Nyepi' },
+                { id: 3, date: '2024-04-10', description: 'Hari Raya Idul Fitri 1445H' },
+                { id: 4, date: '2024-04-11', description: 'Hari Raya Idul Fitri 1445H' },
+                { id: 5, date: '2024-05-01', description: 'Hari Buruh Internasional' },
+                { id: 6, date: '2024-05-09', description: 'Kenaikan Isa Almasih' },
+                { id: 7, date: '2024-05-23', description: 'Hari Raya Waisak 2568 BE' },
+                { id: 8, date: '2024-06-01', description: 'Hari Lahir Pancasila' },
+                { id: 9, date: '2024-06-17', description: 'Hari Raya Idul Adha 1445H' },
+                { id: 10, date: '2024-07-07', description: 'Tahun Baru Islam 1446H' },
+                { id: 11, date: '2024-08-17', description: 'Hari Kemerdekaan RI ke-79' },
+                { id: 12, date: '2024-09-16', description: 'Maulid Nabi Muhammad SAW' },
+                { id: 13, date: '2024-12-25', description: 'Hari Raya Natal' }
+            ];
+            localStorage.setItem('holidays', JSON.stringify(holidays));
+        }
+
+        // Initialize change logs
+        if (!localStorage.getItem('change_logs')) {
+            localStorage.setItem('change_logs', JSON.stringify([]));
+        }
+    }
+
+    // Auth methods
+    login(username, password) {
+        try {
+            const employees = JSON.parse(localStorage.getItem('employees') || '[]');
+            const user = employees.find(emp => 
+                emp.username === username && emp.password === password
+            );
+            return user || null;
+        } catch (error) {
+            console.error('Login error:', error);
+            return null;
+        }
+    }
+
+    // ... (sisanya sama seperti sebelumnya, tidak perlu diubah) ...
+}
