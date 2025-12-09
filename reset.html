@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Database Absensi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h3><i class="fas fa-database"></i> Reset Database Sistem Absensi</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <h5>PERINGATAN!</h5>
+                <p>Reset database akan menghapus SEMUA data yang tersimpan:</p>
+                <ul>
+                    <li>Semua data karyawan (19 orang)</li>
+                    <li>Semua data absensi</li>
+                    <li>Semua log perubahan</li>
+                    <li>Pengaturan sistem</li>
+                </ul>
+                <p class="mb-0">Data tidak dapat dikembalikan setelah direset!</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-info text-white">
+                            <h5>Akun yang akan dibuat ulang:</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>Administrator (1):</h6>
+                            <ul>
+                                <li><strong>sutris</strong> / sutris123 (HRD Manager)</li>
+                            </ul>
+                            
+                            <h6>Karyawan (18):</h6>
+                            <ul>
+                                <li><strong>nita</strong> / nita123</li>
+                                <li><strong>heri</strong> / heri123</li>
+                                <li><strong>yian</strong> / yian123</li>
+                                <li><strong>diah</strong> / diah123</li>
+                                <li><strong>teguh</strong> / teguh123</li>
+                                <li>... dan 13 lainnya</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5>Tindakan Reset</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <button id="resetBtn" class="btn btn-danger btn-lg mb-3">
+                                <i class="fas fa-trash-alt"></i> RESET SEMUA DATA
+                            </button>
+                            <p class="text-muted">
+                                Setelah reset, sistem akan kembali ke kondisi awal dengan data default
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <a href="index.html" class="btn btn-secondary">Kembali ke Login</a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script>
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            if (confirm('Yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!')) {
+                // Clear semua data
+                localStorage.clear();
+                
+                // Tampilkan pesan sukses
+                this.innerHTML = '<i class="fas fa-check"></i> DATA BERHASIL DIHAPUS';
+                this.className = 'btn btn-success btn-lg mb-3';
+                this.disabled = true;
+                
+                // Buat pesan sukses
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success mt-3';
+                alert.innerHTML = `
+                    <h4><i class="fas fa-check-circle"></i> Reset Berhasil!</h4>
+                    <p>Database telah direset ke kondisi awal.</p>
+                    <p><strong>Silakan buka halaman <a href="index.html">login</a> untuk menggunakan sistem.</strong></p>
+                    <p>Akun default sudah tersedia:</p>
+                    <ul>
+                        <li>Admin: <strong>sutris</strong> / sutris123</li>
+                        <li>Karyawan: <strong>nita</strong> / nita123</li>
+                    </ul>
+                `;
+                
+                document.querySelector('.card-body').appendChild(alert);
+            }
+        });
+    </script>
+</body>
+</html>
